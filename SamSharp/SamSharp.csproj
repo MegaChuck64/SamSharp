@@ -5,4 +5,22 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageId>MegaChuck64.SamSharp</PackageId>
+
+    <Authors>MegaChuck64; CJ Carey</Authors>
+
+    <Description>
+      C# port of the classic Software Automatic Mouth (SAM)
+      speech synthesizer for the Commodore 64.
+    </Description>
+
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/MegaChuck64/SAMSharp.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/MegaChuck64/SAMSharp</PackageProjectUrl>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+  </PropertyGroup>
 </Project>
