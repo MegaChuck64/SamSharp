@@ -8,8 +8,9 @@ on:
 jobs:
   build-and-publish:
     runs-on: windows-latest
+
     environment: Nuget
-    
+
     permissions:
       contents: read
       id-token: write
@@ -30,18 +31,36 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore SamSharp.csproj
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore /p:Version=$env:VERSION
         shell: pwsh
+        run: |
+          dotnet build SamSharp.csproj `
+            --configuration Release `
+            --no-restore `
+            /p:Version=$env:VERSION
 
       - name: Test
-        run: dotnet test --configuration Release --no-build
+        run: dotnet test SamSharpTest.csproj --configuration Release --no-build
 
       - name: Pack
-        run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:PackageVersion=$env:VERSION
         shell: pwsh
+        run: |
+          dotnet pack SamSharp.csproj `
+            --configuration Release `
+            --no-build `
+            --output ./nupkgs `
+            /p:PackageVersion=$env:VERSION
+
+      - name: List Generated Packages
+        shell: pwsh
+        run: |
+          Write-Host "Current Directory:"
+          Get-Location
+
+          Write-Host "`nGenerated packages:"
+          Get-ChildItem -Recurse -Filter *.nupkg
 
       - name: NuGet Login (Trusted Publishing)
         id: login
@@ -50,7 +69,8 @@ jobs:
           user: MegaChuck64
 
       - name: Publish to NuGet
-        run: >
-          dotnet nuget push "./nupkgs/*.nupkg"
-          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
-          --source "https://api.nuget.org/v3/index.json"
+        shell: pwsh
+        run: |
+          dotnet nuget push "./nupkgs/*.nupkg" `
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" `
+            --source "https://api.nuget.org/v3/index.json"
