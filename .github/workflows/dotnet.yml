@@ -28,23 +28,26 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore SamSharp.csproj
+        run: dotnet restore SamSharp.sln
 
       - name: Build
         shell: pwsh
         run: |
-          dotnet build SamSharp.csproj `
+          dotnet build SamSharp.sln `
             --configuration Release `
             --no-restore `
             /p:Version=$env:VERSION
 
       - name: Test
-        run: dotnet test SamSharpTest.csproj --configuration Release --no-build
+        run: |
+          dotnet test SamSharp.sln `
+            --configuration Release `
+            --no-build
 
-      - name: Pack
+      - name: Pack NuGet Package
         shell: pwsh
         run: |
           dotnet pack SamSharp.csproj `
@@ -53,14 +56,10 @@ jobs:
             --output ./nupkgs `
             /p:PackageVersion=$env:VERSION
 
-      - name: List Generated Packages
+      - name: Verify Package
         shell: pwsh
         run: |
-          Write-Host "Current Directory:"
-          Get-Location
-
-          Write-Host "`nGenerated packages:"
-          Get-ChildItem -Recurse -Filter *.nupkg
+          Get-ChildItem ./nupkgs/*.nupkg
 
       - name: NuGet Login (Trusted Publishing)
         id: login
@@ -71,6 +70,8 @@ jobs:
       - name: Publish to NuGet
         shell: pwsh
         run: |
-          dotnet nuget push "./nupkgs/*.nupkg" `
-            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" `
-            --source "https://api.nuget.org/v3/index.json"
+          Get-ChildItem ./nupkgs/*.nupkg | ForEach-Object {
+            dotnet nuget push $_.FullName `
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" `
+              --source "https://api.nuget.org/v3/index.json"
+          }
